@@ -2,9 +2,11 @@ package com.opencv.detect;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.FrameLayout;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraGLSurfaceView;
+import org.opencv.android.JavaCameraView;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 
@@ -20,7 +22,8 @@ public class FaceDetectActivity extends AppCompatActivity {
 
     private final static String TAG = "FaceDetectActivity";
 
-    private CameraGLSurfaceView mOpenCvCameraView;
+
+    private JavaCameraView mOpenCvCameraView;
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -48,26 +51,29 @@ public class FaceDetectActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_face_detect);
 
-        mOpenCvCameraView = (CameraGLSurfaceView) findViewById(R.id.cv_camera);
-        mOpenCvCameraView.setCameraTextureListener(new CameraGLSurfaceView.CameraTextureListener() {
-            @Override
-            public void onCameraViewStarted(int width, int height) {
-                Log.i(TAG, "onCameraViewStarted----------------------------");
-                mOpenCvCameraView.enableView();
-            }
 
-            @Override
-            public void onCameraViewStopped() {
+        mOpenCvCameraView = findViewById(R.id.cameraView);
+//        mOpenCvCameraView.setCameraTextureListener(new CameraGLSurfaceView.CameraTextureListener() {
+//            @Override
+//            public void onCameraViewStarted(int width, int height) {
+//                Log.i(TAG, "onCameraViewStarted----------------------------");
+//                mOpenCvCameraView.enableView();
+//            }
+//
+//            @Override
+//            public void onCameraViewStopped() {
+//
+//            }
+//
+//            @Override
+//            public boolean onCameraTexture(int texIn, int texOut, int width, int height) {
+//                return false;
+//            }
+//        });
 
-            }
 
-            @Override
-            public boolean onCameraTexture(int texIn, int texOut, int width, int height) {
-                return false;
-            }
-        });
-
-
+//        mFramelayout = (FrameLayout) findViewById(R.id.framelayout);
+//        mFramelayout.addView(mOpenCvCameraView, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
     }
 
     @Override

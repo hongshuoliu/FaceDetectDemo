@@ -1,7 +1,9 @@
+/**
+ * 官方demo 的基础上增加了摄像头转换
+ */
 package com.opencv.detect;
 
 import android.content.Context;
-import android.content.res.Configuration;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -20,7 +22,6 @@ import org.opencv.android.CameraBridgeViewBase.CvCameraViewFrame;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
-import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfRect;
 import org.opencv.core.Rect;
@@ -36,7 +37,7 @@ import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
 
-public class FdActivity extends CameraActivity implements CvCameraViewListener2 , View.OnClickListener {
+public class FdActivity extends CameraActivity implements CvCameraViewListener2, View.OnClickListener {
 
     private static final String TAG = "OCVSample::Activity";
     private static final Scalar FACE_RECT_COLOR = new Scalar(0, 255, 0, 255);
@@ -55,7 +56,7 @@ public class FdActivity extends CameraActivity implements CvCameraViewListener2 
     private CascadeClassifier mJavaDetector;
     private DetectionBasedTracker mNativeDetector;
 
-    private int mDetectorType = JAVA_DETECTOR;
+    private int mDetectorType = NATIVE_DETECTOR;
     private String[] mDetectorName;
 
     private float mRelativeFaceSize = 0.2f;
@@ -106,8 +107,8 @@ public class FdActivity extends CameraActivity implements CvCameraViewListener2 
                         Log.e(TAG, "Failed to load cascade. Exception thrown: " + e);
                     }
 
-                    if (null != mOpenCvCameraView){
-                        mOpenCvCameraView.setShowFullPreview(false);
+                    if (null != mOpenCvCameraView) {
+//                        mOpenCvCameraView.setShowFullPreview(false);
                         mOpenCvCameraView.enableView();
                     }
 
@@ -138,7 +139,7 @@ public class FdActivity extends CameraActivity implements CvCameraViewListener2 
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-        setContentView(R.layout.face_detect_surface_view);
+        setContentView(R.layout.face_detect_surface_view_lan);
 
         mOpenCvCameraView = (MyCvCameraView) findViewById(R.id.cv_camera_id);
         mOpenCvCameraView.setVisibility(CameraBridgeViewBase.VISIBLE);
@@ -155,8 +156,9 @@ public class FdActivity extends CameraActivity implements CvCameraViewListener2 
     @Override
     public void onPause() {
         super.onPause();
-        if (mOpenCvCameraView != null)
+        if (mOpenCvCameraView != null) {
             mOpenCvCameraView.disableView();
+        }
     }
 
     @Override
@@ -224,25 +226,25 @@ public class FdActivity extends CameraActivity implements CvCameraViewListener2 
         mRgba = inputFrame.rgba();
         mGray = inputFrame.gray();
 
-        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-            Log.i("CVCamera", "竖屏显示...");
-
-            if (mOpenCvCameraView.isFrontCamare()) {
-                Core.rotate(mRgba, mRgba, Core.ROTATE_90_COUNTERCLOCKWISE);
-                Core.flip(mRgba, mRgba, 1);
-                Core.rotate(mGray, mGray, Core.ROTATE_90_COUNTERCLOCKWISE);
-                Core.flip(mGray, mGray, 1);
-            } else {
-                Core.rotate(mRgba, mRgba, Core.ROTATE_90_CLOCKWISE);
-                Core.rotate(mGray, mGray, Core.ROTATE_90_CLOCKWISE);
-            }
-
-        } else {
-            if (mOpenCvCameraView.isFrontCamare()) {
-                Core.flip(mRgba, mRgba, 1);
-                Core.flip(mGray, mGray, 1);
-            }
-        }
+//        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+//            Log.i("CVCamera", "竖屏显示...");
+//
+//            if (mOpenCvCameraView.isFrontCamare()) {
+//                Core.rotate(mRgba, mRgba, Core.ROTATE_90_COUNTERCLOCKWISE);
+//                Core.flip(mRgba, mRgba, 1);
+//                Core.rotate(mGray, mGray, Core.ROTATE_90_COUNTERCLOCKWISE);
+//                Core.flip(mGray, mGray, 1);
+//            } else {
+//                Core.rotate(mRgba, mRgba, Core.ROTATE_90_CLOCKWISE);
+//                Core.rotate(mGray, mGray, Core.ROTATE_90_CLOCKWISE);
+//            }
+//
+//        } else {
+//            if (mOpenCvCameraView.isFrontCamare()) {
+//                Core.flip(mRgba, mRgba, 1);
+//                Core.flip(mGray, mGray, 1);
+//            }
+//        }
 
 
         if (mAbsoluteFaceSize == 0) {
@@ -272,7 +274,6 @@ public class FdActivity extends CameraActivity implements CvCameraViewListener2 
         for (int i = 0; i < facesArray.length; i++) {
             Imgproc.rectangle(mRgba, facesArray[i].tl(), facesArray[i].br(), FACE_RECT_COLOR, 3);
         }
-
 
 
         return mRgba;
