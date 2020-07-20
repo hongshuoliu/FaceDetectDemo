@@ -5,6 +5,7 @@ import android.hardware.Camera;
 import android.util.AttributeSet;
 import android.util.Log;
 
+import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.JavaCameraView;
 
 import java.io.FileOutputStream;
@@ -17,6 +18,10 @@ import java.util.List;
 public class MyCvCameraView extends JavaCameraView implements Camera.PictureCallback {
     private String TAG = "MyCvCameraView";
     private String mPictureFileName;
+
+    public MyCvCameraView(Context context) {
+        super(context, CameraBridgeViewBase.CAMERA_ID_ANY);
+    }
 
     public MyCvCameraView(Context context, AttributeSet attrs) {
         super(context, attrs);

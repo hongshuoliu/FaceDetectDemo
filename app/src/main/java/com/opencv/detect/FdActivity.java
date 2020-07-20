@@ -9,8 +9,9 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.RadioButton;
+import android.widget.ImageView;
 
 import com.opencv.detect.utils.DetectionBasedTracker;
 import com.opencv.detect.widget.MyCvCameraView;
@@ -39,7 +40,7 @@ import java.util.List;
 
 public class FdActivity extends CameraActivity implements CvCameraViewListener2, View.OnClickListener {
 
-    private static final String TAG = "OCVSample::Activity";
+    private static final String TAG = "FdActivity";
     private static final Scalar FACE_RECT_COLOR = new Scalar(0, 255, 0, 255);
     public static final int JAVA_DETECTOR = 0;
     public static final int NATIVE_DETECTOR = 1;
@@ -63,9 +64,11 @@ public class FdActivity extends CameraActivity implements CvCameraViewListener2,
     private int mAbsoluteFaceSize = 0;
 
     private MyCvCameraView mOpenCvCameraView;
-    private RadioButton mBtnFrontCamera;
-    private RadioButton mBtnBackCamera;
+    private ImageView mCameraSwitch;
 
+    /**
+     *
+     */
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
         public void onManagerConnected(int status) {
@@ -138,18 +141,14 @@ public class FdActivity extends CameraActivity implements CvCameraViewListener2,
         Log.i(TAG, "called onCreate");
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        setContentView(R.layout.face_detect_surface_view);
 
-        setContentView(R.layout.face_detect_surface_view_lan);
-
-        mOpenCvCameraView = (MyCvCameraView) findViewById(R.id.cv_camera_id);
-        mOpenCvCameraView.setVisibility(CameraBridgeViewBase.VISIBLE);
+        mOpenCvCameraView = new MyCvCameraView(this);
         mOpenCvCameraView.setCvCameraViewListener(this);
+        ((ViewGroup) findViewById(R.id.camera_layout)).addView(mOpenCvCameraView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
 
-        mBtnFrontCamera = (RadioButton) findViewById(R.id.btn_frontCamera);
-        mBtnFrontCamera.setOnClickListener(this);
-        mBtnBackCamera = (RadioButton) findViewById(R.id.btn_backCamera);
-        mBtnBackCamera.setOnClickListener(this);
-        mBtnBackCamera.setChecked(true);
+        mCameraSwitch = (ImageView) findViewById(R.id.camera_switch);
+        mCameraSwitch.setOnClickListener(this);
 
     }
 
@@ -166,7 +165,7 @@ public class FdActivity extends CameraActivity implements CvCameraViewListener2,
         super.onResume();
         if (!OpenCVLoader.initDebug()) {
             Log.d(TAG, "Internal OpenCV library not found. Using OpenCV Manager for initialization");
-            OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_0_0, this, mLoaderCallback);
+            OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION, this, mLoaderCallback);
         } else {
             Log.d(TAG, "OpenCV library found inside package. Using it!");
             mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
@@ -178,11 +177,12 @@ public class FdActivity extends CameraActivity implements CvCameraViewListener2,
     public void onClick(View view) {
         int id = view.getId();
         switch (view.getId()) {
-            case R.id.btn_frontCamera:
-                mOpenCvCameraView.setFontCamare();
-                break;
-            case R.id.btn_backCamera:
-                mOpenCvCameraView.setBackCamare();
+            case R.id.camera_switch:
+                if (mOpenCvCameraView.isFrontCamare()) {
+                    mOpenCvCameraView.setBackCamare();
+                } else {
+                    mOpenCvCameraView.setFontCamare();
+                }
                 break;
             default:
                 break;

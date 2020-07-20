@@ -2,15 +2,20 @@ package com.opencv.detect;
 
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.FrameLayout;
+import android.view.ViewGroup;
+import android.view.WindowManager;
 
 import org.opencv.android.BaseLoaderCallback;
-import org.opencv.android.CameraGLSurfaceView;
-import org.opencv.android.JavaCameraView;
+import org.opencv.android.CameraActivity;
+import org.opencv.android.CameraBridgeViewBase;
+import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
+import org.opencv.android.JavaCamera2View;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
+import org.opencv.core.Mat;
 
-import androidx.appcompat.app.AppCompatActivity;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * 功能描述：
@@ -18,12 +23,12 @@ import androidx.appcompat.app.AppCompatActivity;
  * @author liuhongshuo
  * @date 2020-07-09
  */
-public class FaceDetectActivity extends AppCompatActivity {
+public class FaceDetectActivity extends CameraActivity implements CvCameraViewListener2 {
 
     private final static String TAG = "FaceDetectActivity";
 
 
-    private JavaCameraView mOpenCvCameraView;
+    private JavaCamera2View mOpenCvCameraView;
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -49,31 +54,13 @@ public class FaceDetectActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_face_detect);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        setContentView(R.layout.face_detect_surface_view);
 
+        mOpenCvCameraView = new JavaCamera2View(this, CameraBridgeViewBase.CAMERA_ID_ANY);
+        mOpenCvCameraView.setCvCameraViewListener(this);
+        ((ViewGroup) findViewById(R.id.camera_layout)).addView(mOpenCvCameraView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
 
-        mOpenCvCameraView = findViewById(R.id.cameraView);
-//        mOpenCvCameraView.setCameraTextureListener(new CameraGLSurfaceView.CameraTextureListener() {
-//            @Override
-//            public void onCameraViewStarted(int width, int height) {
-//                Log.i(TAG, "onCameraViewStarted----------------------------");
-//                mOpenCvCameraView.enableView();
-//            }
-//
-//            @Override
-//            public void onCameraViewStopped() {
-//
-//            }
-//
-//            @Override
-//            public boolean onCameraTexture(int texIn, int texOut, int width, int height) {
-//                return false;
-//            }
-//        });
-
-
-//        mFramelayout = (FrameLayout) findViewById(R.id.framelayout);
-//        mFramelayout.addView(mOpenCvCameraView, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
     }
 
     @Override
@@ -81,7 +68,7 @@ public class FaceDetectActivity extends AppCompatActivity {
         super.onResume();
         if (!OpenCVLoader.initDebug()) {
             Log.d(TAG, "Internal OpenCV library not found. Using OpenCV Manager for initialization");
-            OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_0_0, this, mLoaderCallback);
+            OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION, this, mLoaderCallback);
         } else {
             Log.d(TAG, "OpenCV library found inside package. Using it!");
             mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
@@ -89,8 +76,8 @@ public class FaceDetectActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
+    public void onStop() {
+        super.onStop();
         if (mOpenCvCameraView != null) {
             mOpenCvCameraView.disableView();
         }
@@ -103,6 +90,29 @@ public class FaceDetectActivity extends AppCompatActivity {
         if (mOpenCvCameraView != null) {
             mOpenCvCameraView.disableView();
         }
+    }
+
+
+    @Override
+    protected List<? extends CameraBridgeViewBase> getCameraViewList() {
+        return Collections.singletonList(mOpenCvCameraView);
+    }
+
+    @Override
+    public void onCameraViewStarted(int width, int height) {
+
+    }
+
+    @Override
+    public void onCameraViewStopped() {
+
+    }
+
+    @Override
+    public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
+        Mat frame = inputFrame.rgba();
+
+        return frame;
     }
 
 }
