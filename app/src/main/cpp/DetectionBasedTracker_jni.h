@@ -8,7 +8,7 @@
 extern "C" {
 #endif
 /*
- * Class:     org_opencv_samples_fd_DetectionBasedTracker
+ * Class:     com_opencv_detect_utils_DetectionBasedTracker
  * Method:    nativeCreateObject
  * Signature: (Ljava/lang/String;F)J
  */
@@ -16,7 +16,7 @@ JNIEXPORT jlong JNICALL Java_com_opencv_detect_utils_DetectionBasedTracker_nativ
         (JNIEnv *, jclass, jstring, jint);
 
 /*
- * Class:     org_opencv_samples_fd_DetectionBasedTracker
+ * Class:     com_opencv_detect_utils_DetectionBasedTracker
  * Method:    nativeDestroyObject
  * Signature: (J)V
  */
@@ -24,7 +24,7 @@ JNIEXPORT void JNICALL Java_com_opencv_detect_utils_DetectionBasedTracker_native
         (JNIEnv *, jclass, jlong);
 
 /*
- * Class:     org_opencv_samples_fd_DetectionBasedTracker
+ * Class:     com_opencv_detect_utils_DetectionBasedTracker
  * Method:    nativeStart
  * Signature: (J)V
  */
@@ -32,7 +32,7 @@ JNIEXPORT void JNICALL Java_com_opencv_detect_utils_DetectionBasedTracker_native
         (JNIEnv *, jclass, jlong);
 
 /*
- * Class:     org_opencv_samples_fd_DetectionBasedTracker
+ * Class:     com_opencv_detect_utils_DetectionBasedTracker
  * Method:    nativeStop
  * Signature: (J)V
  */
@@ -40,7 +40,7 @@ JNIEXPORT void JNICALL Java_com_opencv_detect_utils_DetectionBasedTracker_native
         (JNIEnv *, jclass, jlong);
 
 /*
- * Class:     org_opencv_samples_fd_DetectionBasedTracker
+ * Class:     com_opencv_detect_utils_DetectionBasedTracker
  * Method:    nativeSetFaceSize
  * Signature: (JI)V
  */
@@ -48,7 +48,7 @@ JNIEXPORT void JNICALL Java_com_opencv_detect_utils_DetectionBasedTracker_native
         (JNIEnv *, jclass, jlong, jint);
 
 /*
- * Class:     org_opencv_samples_fd_DetectionBasedTracker
+ * Class:     com_opencv_detect_utils_DetectionBasedTracker
  * Method:    nativeDetect
  * Signature: (JJJ)V
  */

@@ -1,17 +1,16 @@
 package com.opencv.detect;
 
 import android.os.Bundle;
-import android.util.Log;
+import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.ImageView;
 
-import org.opencv.android.BaseLoaderCallback;
-import org.opencv.android.CameraActivity;
+import com.opencv.detect.utils.FacePresenter;
+import com.opencv.detect.widget.MyCvCameraView;
+
 import org.opencv.android.CameraBridgeViewBase;
-import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
-import org.opencv.android.JavaCamera2View;
-import org.opencv.android.LoaderCallbackInterface;
-import org.opencv.android.OpenCVLoader;
+import org.opencv.core.Core;
 import org.opencv.core.Mat;
 
 import java.util.Collections;
@@ -23,56 +22,52 @@ import java.util.List;
  * @author liuhongshuo
  * @date 2020-07-09
  */
-public class FaceDetectActivity extends CameraActivity implements CvCameraViewListener2 {
+public class FaceDetectActivity extends CameraBaseActivity {
 
     private final static String TAG = "FaceDetectActivity";
 
+    private ImageView mCameraSwitch;
 
-    private JavaCamera2View mOpenCvCameraView;
+    private MyCvCameraView mOpenCvCameraView;
 
-    private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
-        @Override
-        public void onManagerConnected(int status) {
-            switch (status) {
-                case LoaderCallbackInterface.SUCCESS: {
-                    Log.i(TAG, "OpenCV loaded successfully");
-
-                    if (null != mOpenCvCameraView) {
-                        mOpenCvCameraView.enableView();
-                    }
-
-                }
-                break;
-                default: {
-                    super.onManagerConnected(status);
-                }
-                break;
-            }
-        }
-    };
+    private FacePresenter facePresenter;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        setContentView(R.layout.face_detect_surface_view);
+        setContentView(R.layout.activity_camera);
 
-        mOpenCvCameraView = new JavaCamera2View(this, CameraBridgeViewBase.CAMERA_ID_ANY);
+        mOpenCvCameraView = new MyCvCameraView(this);
         mOpenCvCameraView.setCvCameraViewListener(this);
         ((ViewGroup) findViewById(R.id.camera_layout)).addView(mOpenCvCameraView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+
+        mCameraSwitch = (ImageView) findViewById(R.id.camera_switch);
+        mCameraSwitch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mOpenCvCameraView.switchCamare();
+            }
+        });
+    }
+
+    @Override
+    protected void loadOpenCVSuccess() {
+        if (null != mOpenCvCameraView) {
+//            mOpenCvCameraView.showFullPreview(true);
+            mOpenCvCameraView.enableView();
+        }
+        facePresenter = new FacePresenter(FaceDetectActivity.this);
+    }
+
+    @Override
+    protected void loadOpenCVFail() {
 
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        if (!OpenCVLoader.initDebug()) {
-            Log.d(TAG, "Internal OpenCV library not found. Using OpenCV Manager for initialization");
-            OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION, this, mLoaderCallback);
-        } else {
-            Log.d(TAG, "OpenCV library found inside package. Using it!");
-            mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
-        }
+    protected List<? extends CameraBridgeViewBase> getCameraViewList() {
+        return Collections.singletonList(mOpenCvCameraView);
     }
 
     @Override
@@ -90,12 +85,10 @@ public class FaceDetectActivity extends CameraActivity implements CvCameraViewLi
         if (mOpenCvCameraView != null) {
             mOpenCvCameraView.disableView();
         }
-    }
 
-
-    @Override
-    protected List<? extends CameraBridgeViewBase> getCameraViewList() {
-        return Collections.singletonList(mOpenCvCameraView);
+        if (null != facePresenter) {
+            facePresenter.onRelease();
+        }
     }
 
     @Override
@@ -111,7 +104,12 @@ public class FaceDetectActivity extends CameraActivity implements CvCameraViewLi
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         Mat frame = inputFrame.rgba();
-
+        if (mOpenCvCameraView.isFrontCamare()) {
+            Core.flip(frame, frame, 1);
+        }
+        if (null != facePresenter) {
+            facePresenter.process(frame);
+        }
         return frame;
     }
 

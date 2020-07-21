@@ -1,24 +1,30 @@
 package com.opencv.detect;
 
+import android.annotation.TargetApi;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.WindowManager;
 
-import com.opencv.detect.widget.MyCvCameraView;
-
 import org.opencv.android.BaseLoaderCallback;
+import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import androidx.appcompat.app.AppCompatActivity;
 
+import static android.Manifest.permission.CAMERA;
+
 public abstract class CameraBaseActivity extends AppCompatActivity implements CvCameraViewListener2 {
-    private static final String TAG = "OCVSample::Activity";
+    private static final String TAG = "CameraBaseActivity";
 
-    protected MyCvCameraView mOpenCvCameraView;
+    private static final int CAMERA_PERMISSION_REQUEST_CODE = 200;
 
-    private boolean mIsJavaCamera = true;
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -27,10 +33,6 @@ public abstract class CameraBaseActivity extends AppCompatActivity implements Cv
                 case LoaderCallbackInterface.SUCCESS: {
                     Log.i(TAG, "OpenCV loaded successfully");
                     loadOpenCVSuccess();
-//                    if (mOpenCvCameraView != null) {
-//                        mOpenCvCameraView.setShowFullPreview(false);
-//                        mOpenCvCameraView.enableView();
-//                    }
                 }
                 break;
                 default: {
@@ -53,19 +55,6 @@ public abstract class CameraBaseActivity extends AppCompatActivity implements Cv
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        if (mOpenCvCameraView != null) {
-            mOpenCvCameraView.disableView();
-        }
-    }
-
-    @Override
     public void onResume() {
         super.onResume();
         if (!OpenCVLoader.initDebug()) {
@@ -78,12 +67,45 @@ public abstract class CameraBaseActivity extends AppCompatActivity implements Cv
 
     }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        if (mOpenCvCameraView != null) {
-            mOpenCvCameraView.disableView();
+    protected List<? extends CameraBridgeViewBase> getCameraViewList() {
+        return new ArrayList<CameraBridgeViewBase>();
+    }
+
+    protected void onCameraPermissionGranted() {
+        List<? extends CameraBridgeViewBase> cameraViews = getCameraViewList();
+        if (cameraViews == null) {
+            return;
         }
+        for (CameraBridgeViewBase cameraBridgeViewBase : cameraViews) {
+            if (cameraBridgeViewBase != null) {
+                cameraBridgeViewBase.setCameraPermissionGranted();
+            }
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        boolean havePermission = true;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{CAMERA}, CAMERA_PERMISSION_REQUEST_CODE);
+                havePermission = false;
+            }
+        }
+        if (havePermission) {
+            onCameraPermissionGranted();
+        }
+    }
+
+    @Override
+    @TargetApi(Build.VERSION_CODES.M)
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        if (requestCode == CAMERA_PERMISSION_REQUEST_CODE && grantResults.length > 0
+                && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            onCameraPermissionGranted();
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     protected abstract void loadOpenCVSuccess();

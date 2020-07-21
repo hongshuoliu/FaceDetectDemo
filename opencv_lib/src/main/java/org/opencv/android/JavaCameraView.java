@@ -429,7 +429,7 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
         return showFullPreview;
     }
 
-    public void setShowFullPreview(boolean showFullPreview) {
+    public void showFullPreview(boolean showFullPreview) {
         this.showFullPreview = showFullPreview;
     }
 }

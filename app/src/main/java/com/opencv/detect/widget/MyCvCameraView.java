@@ -106,4 +106,16 @@ public class MyCvCameraView extends JavaCameraView implements Camera.PictureCall
         enableView();
     }
 
+
+    public void switchCamare() {
+        if (isFrontCamare()) {
+            setCameraIndex(CAMERA_ID_BACK);
+        } else {
+            setCameraIndex(CAMERA_ID_FRONT);
+        }
+        disableView();
+        enableView();
+    }
+
+
 }

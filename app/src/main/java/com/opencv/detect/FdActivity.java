@@ -4,6 +4,7 @@
 package com.opencv.detect;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -16,13 +17,9 @@ import android.widget.ImageView;
 import com.opencv.detect.utils.DetectionBasedTracker;
 import com.opencv.detect.widget.MyCvCameraView;
 
-import org.opencv.android.BaseLoaderCallback;
-import org.opencv.android.CameraActivity;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewFrame;
-import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
-import org.opencv.android.LoaderCallbackInterface;
-import org.opencv.android.OpenCVLoader;
+import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfRect;
 import org.opencv.core.Rect;
@@ -35,10 +32,11 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class FdActivity extends CameraActivity implements CvCameraViewListener2, View.OnClickListener {
+public class FdActivity extends CameraBaseActivity implements View.OnClickListener {
 
     private static final String TAG = "FdActivity";
     private static final Scalar FACE_RECT_COLOR = new Scalar(0, 255, 0, 255);
@@ -66,71 +64,11 @@ public class FdActivity extends CameraActivity implements CvCameraViewListener2,
     private MyCvCameraView mOpenCvCameraView;
     private ImageView mCameraSwitch;
 
-    /**
-     *
-     */
-    private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
-        @Override
-        public void onManagerConnected(int status) {
-            switch (status) {
-                case LoaderCallbackInterface.SUCCESS: {
-                    Log.i(TAG, "OpenCV loaded successfully");
-
-                    // Load native library after(!) OpenCV initialization
-                    System.loadLibrary("detection_based_tracker");
-
-                    try {
-                        // load cascade file from application resources
-                        InputStream is = getResources().openRawResource(R.raw.lbpcascade_frontalface);
-                        File cascadeDir = getDir("cascade", Context.MODE_PRIVATE);
-                        mCascadeFile = new File(cascadeDir, "lbpcascade_frontalface.xml");
-                        FileOutputStream os = new FileOutputStream(mCascadeFile);
-
-                        byte[] buffer = new byte[4096];
-                        int bytesRead;
-                        while ((bytesRead = is.read(buffer)) != -1) {
-                            os.write(buffer, 0, bytesRead);
-                        }
-                        is.close();
-                        os.close();
-
-                        mJavaDetector = new CascadeClassifier(mCascadeFile.getAbsolutePath());
-                        if (mJavaDetector.empty()) {
-                            Log.e(TAG, "Failed to load cascade classifier");
-                            mJavaDetector = null;
-                        } else {
-                            Log.i(TAG, "Loaded cascade classifier from " + mCascadeFile.getAbsolutePath());
-                        }
-                        mNativeDetector = new DetectionBasedTracker(mCascadeFile.getAbsolutePath(), 0);
-
-                        cascadeDir.delete();
-
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        Log.e(TAG, "Failed to load cascade. Exception thrown: " + e);
-                    }
-
-                    if (null != mOpenCvCameraView) {
-//                        mOpenCvCameraView.setShowFullPreview(false);
-                        mOpenCvCameraView.enableView();
-                    }
-
-                }
-                break;
-                default: {
-                    super.onManagerConnected(status);
-                }
-                break;
-            }
-        }
-    };
 
     public FdActivity() {
         mDetectorName = new String[2];
         mDetectorName[JAVA_DETECTOR] = "Java";
         mDetectorName[NATIVE_DETECTOR] = "Native (tracking)";
-
-        Log.i(TAG, "Instantiated new " + this.getClass());
     }
 
     /**
@@ -141,7 +79,7 @@ public class FdActivity extends CameraActivity implements CvCameraViewListener2,
         Log.i(TAG, "called onCreate");
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        setContentView(R.layout.face_detect_surface_view);
+        setContentView(R.layout.activity_camera);
 
         mOpenCvCameraView = new MyCvCameraView(this);
         mOpenCvCameraView.setCvCameraViewListener(this);
@@ -161,17 +99,56 @@ public class FdActivity extends CameraActivity implements CvCameraViewListener2,
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        if (!OpenCVLoader.initDebug()) {
-            Log.d(TAG, "Internal OpenCV library not found. Using OpenCV Manager for initialization");
-            OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION, this, mLoaderCallback);
-        } else {
-            Log.d(TAG, "OpenCV library found inside package. Using it!");
-            mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
+    protected void loadOpenCVSuccess() {
+        // Load native library after(!) OpenCV initialization
+        System.loadLibrary("detection_based_tracker");
+
+        try {
+            // load cascade file from application resources
+            InputStream is = getResources().openRawResource(R.raw.lbpcascade_frontalface);
+            File cascadeDir = getDir("cascade", Context.MODE_PRIVATE);
+            mCascadeFile = new File(cascadeDir, "lbpcascade_frontalface.xml");
+            FileOutputStream os = new FileOutputStream(mCascadeFile);
+
+            byte[] buffer = new byte[4096];
+            int bytesRead;
+            while ((bytesRead = is.read(buffer)) != -1) {
+                os.write(buffer, 0, bytesRead);
+            }
+            is.close();
+            os.close();
+
+            mJavaDetector = new CascadeClassifier(mCascadeFile.getAbsolutePath());
+            if (mJavaDetector.empty()) {
+                Log.e(TAG, "Failed to load cascade classifier");
+                mJavaDetector = null;
+            } else {
+                Log.i(TAG, "Loaded cascade classifier from " + mCascadeFile.getAbsolutePath());
+            }
+            mNativeDetector = new DetectionBasedTracker(mCascadeFile.getAbsolutePath(), 0);
+
+            cascadeDir.delete();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.e(TAG, "Failed to load cascade. Exception thrown: " + e);
+        }
+
+        if (null != mOpenCvCameraView) {
+//          mOpenCvCameraView.showFullPreview(false);
+            mOpenCvCameraView.enableView();
         }
     }
 
+    @Override
+    protected void loadOpenCVFail() {
+
+    }
+
+    @Override
+    protected List<? extends CameraBridgeViewBase> getCameraViewList() {
+        return Collections.singletonList(mOpenCvCameraView);
+    }
 
     @Override
     public void onClick(View view) {
@@ -189,11 +166,6 @@ public class FdActivity extends CameraActivity implements CvCameraViewListener2,
 
         }
 
-    }
-
-    @Override
-    protected List<? extends CameraBridgeViewBase> getCameraViewList() {
-        return Collections.singletonList(mOpenCvCameraView);
     }
 
     @Override
@@ -226,25 +198,29 @@ public class FdActivity extends CameraActivity implements CvCameraViewListener2,
         mRgba = inputFrame.rgba();
         mGray = inputFrame.gray();
 
-//        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-//            Log.i("CVCamera", "竖屏显示...");
-//
-//            if (mOpenCvCameraView.isFrontCamare()) {
-//                Core.rotate(mRgba, mRgba, Core.ROTATE_90_COUNTERCLOCKWISE);
-//                Core.flip(mRgba, mRgba, 1);
-//                Core.rotate(mGray, mGray, Core.ROTATE_90_COUNTERCLOCKWISE);
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            Log.i(TAG, "竖屏显示...");
+
+            if (mOpenCvCameraView.isFrontCamare()) {
+                Core.rotate(mRgba, mRgba, Core.ROTATE_90_COUNTERCLOCKWISE);
+                Core.flip(mRgba, mRgba, 1);
+                Core.rotate(mGray, mGray, Core.ROTATE_90_COUNTERCLOCKWISE);
+                Core.flip(mGray, mGray, 1);
+            } else {
+                Core.rotate(mRgba, mRgba, Core.ROTATE_90_CLOCKWISE);
+                Core.rotate(mGray, mGray, Core.ROTATE_90_CLOCKWISE);
+            }
+
+        } else {
+            Log.i(TAG, "横屏显示...");
+            if (mOpenCvCameraView.isFrontCamare()) {
+//                Core.rotate(mRgba, mRgba, Core.ROTATE_180);
+                Core.flip(mRgba, mRgba, 0);
 //                Core.flip(mGray, mGray, 1);
-//            } else {
-//                Core.rotate(mRgba, mRgba, Core.ROTATE_90_CLOCKWISE);
-//                Core.rotate(mGray, mGray, Core.ROTATE_90_CLOCKWISE);
-//            }
-//
-//        } else {
-//            if (mOpenCvCameraView.isFrontCamare()) {
-//                Core.flip(mRgba, mRgba, 1);
-//                Core.flip(mGray, mGray, 1);
-//            }
-//        }
+
+            }
+
+        }
 
 
         if (mAbsoluteFaceSize == 0) {
@@ -274,7 +250,6 @@ public class FdActivity extends CameraActivity implements CvCameraViewListener2,
         for (int i = 0; i < facesArray.length; i++) {
             Imgproc.rectangle(mRgba, facesArray[i].tl(), facesArray[i].br(), FACE_RECT_COLOR, 3);
         }
-
 
         return mRgba;
     }
