@@ -10,13 +10,19 @@
         android:id="@+id/btn_objectdetect"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="物体识别" />
+        android:text="图片处理" />
 
     <Button
         android:id="@+id/btn_facedetect"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="人脸检测" />
+
+    <Button
+        android:id="@+id/btn_ocr"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="OCR识别" />
 
     <Button
         android:id="@+id/btn_test"

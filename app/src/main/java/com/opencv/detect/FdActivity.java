@@ -32,7 +32,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -80,6 +79,7 @@ public class FdActivity extends CameraBaseActivity implements View.OnClickListen
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_camera);
+        this.setTitle("官方demo");
 
         mOpenCvCameraView = new MyCvCameraView(this);
         mOpenCvCameraView.setCvCameraViewListener(this);

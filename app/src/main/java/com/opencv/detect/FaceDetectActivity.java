@@ -1,9 +1,13 @@
 package com.opencv.detect;
 
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 import com.opencv.detect.utils.FacePresenter;
@@ -16,18 +20,12 @@ import org.opencv.core.Mat;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * 功能描述：
- *
- * @author liuhongshuo
- * @date 2020-07-09
- */
+
 public class FaceDetectActivity extends CameraBaseActivity {
 
-    private final static String TAG = "FaceDetectActivity";
 
+    private FrameLayout mCameraLayout;
     private ImageView mCameraSwitch;
-
     private MyCvCameraView mOpenCvCameraView;
 
     private FacePresenter facePresenter;
@@ -35,34 +33,43 @@ public class FaceDetectActivity extends CameraBaseActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_camera);
+        this.setTitle("人脸检测");
+        initView();
 
-        mOpenCvCameraView = new MyCvCameraView(this);
-        mOpenCvCameraView.setCvCameraViewListener(this);
-        ((ViewGroup) findViewById(R.id.camera_layout)).addView(mOpenCvCameraView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        facePresenter = new FacePresenter(this);
+    }
 
+    @Override
+    protected void loadOpenCVSuccess() {
+        mOpenCvCameraView.enableView();
         mCameraSwitch = (ImageView) findViewById(R.id.camera_switch);
         mCameraSwitch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 mOpenCvCameraView.switchCamare();
             }
         });
     }
 
     @Override
-    protected void loadOpenCVSuccess() {
-        if (null != mOpenCvCameraView) {
-//            mOpenCvCameraView.showFullPreview(true);
-            mOpenCvCameraView.enableView();
-        }
-        facePresenter = new FacePresenter(FaceDetectActivity.this);
-    }
-
-    @Override
     protected void loadOpenCVFail() {
 
+    }
+
+    private void initView() {
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+        mOpenCvCameraView = new MyCvCameraView(this);
+        mOpenCvCameraView.setCvCameraViewListener(this);
+        mOpenCvCameraView.enableFpsMeter();
+        // 前置摄像头开启预览
+        mOpenCvCameraView.setFontCamare();
+
+        mCameraLayout = (FrameLayout) findViewById(R.id.camera_layout);
+        mCameraLayout.addView(mOpenCvCameraView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
     }
 
     @Override
@@ -92,6 +99,12 @@ public class FaceDetectActivity extends CameraBaseActivity {
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_face_detect, menu);
+        return true;
+    }
+
+    @Override
     public void onCameraViewStarted(int width, int height) {
 
     }
@@ -104,13 +117,46 @@ public class FaceDetectActivity extends CameraBaseActivity {
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         Mat frame = inputFrame.rgba();
-        if (mOpenCvCameraView.isFrontCamare()) {
-            Core.flip(frame, frame, 1);
+
+        if (this.getResources().getConfiguration().orientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
+            if (mOpenCvCameraView.isFrontCamare()) {
+                Core.flip(frame, frame, 1);
+                Core.rotate(frame, frame, Core.ROTATE_90_CLOCKWISE);
+            }
+            else {
+                Core.rotate(frame, frame, Core.ROTATE_90_CLOCKWISE);
+            }
         }
-        if (null != facePresenter) {
-            facePresenter.process(frame);
-        }
+
+        facePresenter.process(frame);
         return frame;
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        switch (id) {
+            case R.id.face_trace_menu_id:
+                facePresenter.updateActLevel(1);
+                break;
+            case R.id.eye_roi_menu_id:
+                facePresenter.updateActLevel(2);
+                break;
+            case R.id.eye_location_menu_id:
+                facePresenter.updateActLevel(3);
+                break;
+            case R.id.location_ball_menu_id:
+                facePresenter.updateActLevel(4);
+                break;
+            case R.id.render_ball_menu_id:
+                facePresenter.updateActLevel(5);
+                break;
+            default:
+                facePresenter.updateActLevel(0);
+                break;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
 }

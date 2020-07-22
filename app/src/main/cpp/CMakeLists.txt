@@ -22,6 +22,7 @@ set_target_properties(opencv-lib
 #Add Your Native Lib
 add_library(detection_based_tracker
         SHARED
+        haar_detect.cpp
         detectionbasedtracker_jni.cpp)
 
 # Searches for a specified prebuilt library and stores the path as a

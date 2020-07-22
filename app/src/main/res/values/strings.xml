@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">人脸监测</string>
+    <string name="app_name">OpenCV图像识别</string>
     <string name="faceDetection">人脸检测</string>
     <string name="face_trace">人脸跟踪</string>
     <string name="eye_area">眼睛候选区域</string>

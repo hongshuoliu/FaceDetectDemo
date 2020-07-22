@@ -37,16 +37,17 @@
         <activity
             android:name=".FdActivity"
             android:screenOrientation="landscape" />
+
+        <activity
+            android:name=".ImageActivity"
+            android:screenOrientation="portrait" />
+
         <activity
             android:name=".FaceDetectActivity"
             android:screenOrientation="portrait" />
 
         <activity
-            android:name=".ImageActivity"
-            android:screenOrientation="portrait" />
-        
-        <activity
-            android:name=".EyeRenderActivity"
+            android:name=".OcrDemoActivity"
             android:screenOrientation="portrait" />
 
         <provider

@@ -10,7 +10,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
-import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 
 import androidx.annotation.NonNull;
@@ -35,6 +34,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mBtnObjectdetect.setOnClickListener(this);
         mBtnFacedetect = (Button) findViewById(R.id.btn_facedetect);
         mBtnFacedetect.setOnClickListener(this);
+        findViewById(R.id.btn_ocr).setOnClickListener(this);
         findViewById(R.id.btn_test).setOnClickListener(this);
 
         requestPermission();
@@ -60,7 +60,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         if (Build.VERSION.SDK_INT >= 23) {
             if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(new String[]{Manifest.permission.CAMERA,Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CAMERA);
+                requestPermissions(new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CAMERA);
+                return;
+            }
+            if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_STORAGE);
                 return;
             }
         }
@@ -83,13 +87,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         switch (view.getId()) {
             case R.id.btn_objectdetect:
-                startActivity(FdActivity.class);
+                startActivity(ImageActivity.class);
                 break;
             case R.id.btn_facedetect:
                 startActivity(FaceDetectActivity.class);
                 break;
+            case R.id.btn_ocr:
+                startActivity(OcrDemoActivity.class);
+                break;
             case R.id.btn_test:
-                startActivity(EyeRenderActivity.class);
+                startActivity(FdActivity.class);
                 break;
             default:
                 break;

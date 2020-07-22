@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+
+    <ImageView
+        android:id="@+id/img_src"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <ImageView
+        android:id="@+id/img_dst"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="10dp"
+        android:layout_weight="1" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btn_filter1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="积分图" />
+
+        <Button
+            android:id="@+id/btn_filter2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="局部均方差" />
+
+        <Button
+            android:id="@+id/btn_filter3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="遮罩层" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btn_beauty_java"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="JAVA美颜" />
+
+        <Button
+            android:id="@+id/btn_beauty_native"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Native美颜" />
+
+    </LinearLayout>
+
+</LinearLayout>
